@@ -1,0 +1,144 @@
+Meteor.startup(function(){
+    console.log("Inicio Invoice Express");    
+
+    //var builder = require('xmlbuilder');
+    /*var xml = */
+    var xmlBuilder = Meteor.npmRequire('xmlbuilder'); 
+    var xml = xmlBuilder.create('account')
+	.ele('first_name', 'João').up()
+        .ele('last_name', 'Alves').up()
+	.ele('organization_name', 'RAM').up()
+        .ele('phone', '969389268').up()
+	.ele('email', 'jpmalves1989@gmail.com').up()
+        .ele('password', 'Leomil6300').up()
+        .ele('fiscal_id', '226177165').up()
+	.ele('tax_country', '1').up()
+	.ele('language', 'pt').up()
+	.ele('terms', '1').up()
+	.end({ pretty: true});
+
+
+
+
+
+//-----------------------FUNÇÃO PARA OBTERMOS A INFORMAÇÃO DA NOSSA ACCOUNT---------------------------------
+    var account;
+/*    var get_account_call = HTTP.call('GET', 'https://ram-1.app.invoicexpress.com/api/accounts/29403/get.xml', {"query": "api_key=6fdc4330cc16e8e5f41fc3572bfb7de487806f72&account-id=29403"}, function (error, response) {
+	//ESTA MARTELADA DEVE SER REVISTA...UMA VEZ QUE DEVERÁ EXISTIR OUTRA FORMA DE OBTERMOS O CONTEÚDO DA RESPOSTA
+	account = response.content;
+    }, false);
+    
+    //ESTA MARTELADA NECESSITA DE SER MELHORADA, UMA VEZ QUE EM TEMPO NORMAL, O "ACCOUNT" NÃO É ACTUALIZADO ATEMPADAMENTE COM A INSTRUÇÃO QUE ESTÁ DENTRO DO "GET_ACCOUNT_CALL"
+//    setTimeout(function(){ console.log(account)}, 1000);
+
+*/
+
+
+
+
+
+//-----------------------FUNÇÃO PARA FAZERMOS LOGIN NA API--------------------------------------
+
+    xml = xmlBuilder.create('credentials')
+	.ele('login', 'hugo_ramos28@hotmail.com').up()
+	.ele('password', 'oguh28').up()
+	.end({pretty: true});
+
+//VERSÃO ASSINCRONA DO PEDIDO HTTP
+/*    
+    HTTP.call('POST', 'https://www.app.invoicexpress.com/login.xml', {
+	     headers: {
+		 'Content-Type': 'text/xml',
+		 'charset': 'utf-8'
+	     },
+	     content: xml
+    }, function (error, response) {
+	if (error) {
+	    console.log("DEU ERRO NO PEDIDO");
+	    console.log(error);
+	    return;
+	}
+	console.log("PEDIDO FEITO COM SUCESSO");
+	console.log(response.content);	
+    });
+*/
+
+// ESTA É UMA VERSÃO SINCRONA DO LOGIN, UMA VEZ QUE SE NÃO FOR DEFINIDA A FUNÇÃO DE TRATAMENTO DO "ERROR" E "RESPONSE", ELE ASSUME AUTOMATICAMENTE QUE SE TRATA DE UM REQUEST SINCRONO
+    var response = HTTP.call('POST', 'https://www.app.invoicexpress.com/login.xml', {
+             headers: {
+                 'Content-Type': 'text/xml',
+                 'charset': 'utf-8'
+             },
+             content: xml
+    });
+    console.log("LOGIN FEITOOOOOOOO_______________" + response);
+
+
+
+
+
+//--------------------------FUNÇÃO PARA CRIAÇÃO DE INVOICES ------------------------------------
+
+    xml = xmlBuilder.create('invoice')
+        .ele('api_key', '6fdc4330cc16e8e5f41fc3572bfb7de487806f72') //??????????????????
+        .up()
+	.ele('date', '07/05/2015')
+	.up()
+        .ele('due_date', '08/05/2015')
+	.up()
+	.ele('client')
+	    .ele('name', 'Ricardo Pereira')
+	    .up()
+	    .ele('code', '100')
+	    .up()
+	    .up()
+        .ele('items', {'type': 'array'})
+            .ele('item')
+                .ele('name', 'Product 1')
+	        .up()
+                .ele('description', 'Cleaning product')
+	        .up()
+                .ele('unit_price', '10.0')
+	        .up()
+                .ele('quantity', '1.0')
+	        .up()
+                .up()
+            .ele('item')
+                .ele('name', 'Product 2')
+	        .up()
+                .ele('description', 'Beauty product')
+	        .up()
+                .ele('unit_price', '5.0')
+	        .up()
+                .ele('quantity', '1.0')
+	        .up()
+                .ele('tax')
+                    .ele('name', 'IVA23')
+	.end({pretty: true});
+
+
+    HTTP.call('POST', 'https://ram-1.app.invoicexpress.com/invoices.xml', {
+             headers: {
+                 'Content-Type': 'text/xml',
+                 'charset': 'utf-8'
+             },
+             content: xml
+    }, function (error, response) {
+        if (error) {
+            console.log("DEU ERRO NO PEDIDO");
+            console.log(error);
+            return;
+        }
+        console.log("PEDIDO FEITO COM SUCESSO");
+        console.log(response);
+    });
+
+
+
+/*    var user_authentication_call = HTTP.call('POST', 'https://www.app.invoicexpress.com/login.xml', {headers: "Content-Type: application/xml; charset=utf-8", body: xml}, function(error, response) {
+	console.log(response);
+
+    });
+*/
+
+});

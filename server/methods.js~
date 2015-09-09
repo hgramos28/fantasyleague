@@ -1,0 +1,91 @@
+Meteor.methods({
+//Função que faz a análise das estatisticas, por forma a identificar os jogos a considerar
+    'inspect-match-stats' : function (match_current_result, match_current_time) {
+        var stats_count;
+	//Vai percorrer a lista de estatisticas da equipa da casa
+        $('.parts, #tab-statistics-0-statistic').each(function() {
+            console.log($(this).text());
+	});
+    },
+
+
+//Função que faz a analise das odds iniciais e as compara com o resultado actual, por forma a identificar equipas favoritas que estão a perder ou empatadas ao minuto 70 ou menor
+    'inspect-match-odds': function (match_current_result, match_current_time) {
+	var home_odd;
+	var draw_odd;
+	var away_odd;
+	var live_winning_team;
+	var pre_match_favourite_team;
+
+	home_odd=parseFloat($('td[class="kx o_1"]').text());
+	draw_odd=parseFloat($('td[class="kx o_0"]').text());
+	away_odd=parseFloat($('td[class="kx o_2"]').text());
+	
+	//Analisa quem é a equipa favorita tendo em conta as odds
+	if(home_odd<away_odd){
+            pre_match_favourite_team="home";
+	}
+	else if(home_odd>away_odd){
+            pre_match_favourite_team="away";
+	}
+	else if ((home_odd != "NaN") && (home_odd==away_odd)) {
+            pre_match_favourite_team="draw";
+	}
+	//caso este jogo não tenha odds disponíveis, sai da função imediatamente
+	else
+            return false;
+
+
+	//Chamamos a função que devolve a equipa que está a ganhar neste momento
+	live_winning_team = Meteor.call('get-live-winning-team', match_current_result);
+
+	// if (equipa favorita estiver a perder, este é um jogo a considerar)
+	if ((pre_match_favourite_team != live_winning_team) && (live_winning_team != "draw")) {
+	    console.log("-------GAME TO CONSIDER -> FAVOURITE TEAM LOSING----------");
+            console.log("SCOREBOARD -> " + $('td[id="flashscore_column"]').text());
+            console.log("ODDS -> " + home_odd + "|" + draw_odd + "|" + away_odd);
+            console.log("TEMPO -> " + match_current_time);
+            console.log("RESULTADO -> " + match_current_result);
+            console.log("-----------------------------------------------------------");
+	}
+	// if (jogo já vai nos 70 minutos e a equipa favourita ainda não ganha, este é um jogo a considerar)
+	else if((pre_match_favourite_team!="draw") && (live_winning_team == "draw") && (parseInt(match_current_time)>=70) && (parseInt(match_current_time)<90)){ 
+	    console.log("-------GAME TO CONSIDER -> DRAW AT 70'th minute------------");
+            console.log("SCOREBOARD -> " + $('td[id="flashscore_column"]').text());
+            console.log("ODDS -> " + home_odd + "|" + draw_odd + "|" + away_odd);
+            console.log("TEMPO -> " + match_current_time);
+            console.log("RESULTADO -> " + match_current_result);
+            console.log("-----------------------------------------------------------");
+	}
+	
+    },
+
+
+
+
+//-----------------------------FUNÇÕES DE APOIO AO CÓDIGO DE ANÁLISE DE INFORMAÇÃO-------------------------
+//Função que faz uso da biblioteca cheerio e faz o load do código da página que queremos. Tiramos aqui partido do facto de $ se tratar de uma variável global    
+    'load-page-html-code' : function (url) {
+	var page_to_load = HTTP.call("GET", url);
+	$ = cheerio.load(page_to_load.content);
+    },
+
+//Função que devolve a equipa que está a ganhar no momento. "Home", "Away" ou "Draw"
+    'get-live-winning-team' : function (match_current_result) {
+	var live_winning_team;
+        // if (equipa da casa a ganhar à equipa forasteira)
+        if(parseInt(match_current_result.split(":")[0])>parseInt(match_current_result.split(":")[1])){
+            live_winning_team = "home";
+        }
+        // else if (equipa da casa a perder com a equipa forasteira)
+        else if (parseInt(match_current_result.split(":")[0])<parseInt(match_current_result.split(":")[1])){
+            live_winning_team = "away";
+        }
+        // else (equipas estão empatadas)
+        else {
+            live_winning_team = "draw";
+        }
+	return live_winning_team;
+    }
+
+});

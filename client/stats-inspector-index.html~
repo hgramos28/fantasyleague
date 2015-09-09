@@ -1,0 +1,11 @@
+<template name="statsinspectorindex">
+  <div class="row">
+    <div class="col-md-12">
+      <p> These are the games you should look at</p>
+      <p> TIAGO É GAY</p>
+      <ul id="team_1" class="list-group">
+	<li class="list-group-item"></li>
+      </ul>
+    </div>
+  </div>
+</template>

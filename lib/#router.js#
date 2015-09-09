@@ -5,12 +5,11 @@ Router.configure({
 
 //Router.onBeforeAction(function() {
 Router.route('/', function () {
-//    if (! Meteor.userId()) {
 	Meteor.subscribe('inspect-flashscore-stats');
 	this.render('statsinspectorindex');
-  //} else {
-    //  this.next();
-  //}
+  } else {
+      this.next();
+  }
 });
 
 

@@ -1,0 +1,18 @@
+Meteor.startup(function(){
+    console.log("Inicio Invoice Express");    
+
+    //var builder = require('xmlbuilder');
+    /*var xml = */
+    var xmlBuilder = Meteor.npmRequire('xmlbuilder'); 
+    var xml = xmlBuilder.create('account')
+	.ele('organization_name', 'RAM').up()
+	.ele('email', 'jpmalves1989@gmail.com').up()
+        .ele('password', 'RAM123456').up()
+        .ele('terms', '1').up()
+	.end({ pretty: true});
+
+    console.log(String(xml));
+        
+ //   var invoice_response = HTTP.call('POST', 'https://www.app.invoicexpress.com/api/accounts/create.xml', {'headers': "Content-Type: application/xml; charset=utf-8", 'params': xml});
+
+});
